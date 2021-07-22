@@ -881,7 +881,12 @@ export function converCLtoBank(items: number[]) {
 }
 
 // Get the left list to be added to the cls
-function getLeftList(userBank: Bank, checkCategory: string, allItems: boolean = false): ILeftListStatus {
+function getLeftList(
+	userBank: Bank,
+	checkCategory: string,
+	allItems: boolean = false,
+	removeCoins = false
+): ILeftListStatus {
 	let leftList: ILeftListStatus = {};
 	for (const [category, entries] of Object.entries(allCollectionLogs)) {
 		if (category === checkCategory) {
@@ -895,6 +900,7 @@ function getLeftList(userBank: Bank, checkCategory: string, allItems: boolean = 
 				} else {
 					items = [...new Set(attributes.items)];
 				}
+				if (removeCoins && items.includes(995)) items.splice(items.indexOf(995), 1);
 				const [totalCl, userAmount] = getUserClData(userBank.bank, items);
 				leftList[activityName] =
 					userAmount === 0 ? 'not_started' : userAmount === totalCl ? 'completed' : 'started';
@@ -922,6 +928,7 @@ export function getBank(user: KlasaUser, type: 'sacrifice' | 'bank' | 'collectio
 
 // Get the total items the user has in its CL and the total items to collect
 export function getTotalCl(user: KlasaUser, logType: 'sacrifice' | 'bank' | 'collection') {
+	if (logType === 'sacrifice' && allCLItems.includes(995)) allCLItems.splice(allCLItems.indexOf(995), 1);
 	return getUserClData(getBank(user, logType).bank, allCLItems);
 }
 
@@ -950,7 +957,7 @@ export function getPossibleOptions() {
 	return new MessageAttachment(Buffer.from(normalTable), 'possible_logs.txt');
 }
 
-export function getCollectionItems(collection: string, allItems = false): number[] {
+export function getCollectionItems(collection: string, allItems = false, removeCoins = false): number[] {
 	let _items: number[] = [];
 	loop: for (const [category, entries] of Object.entries(allCollectionLogs)) {
 		if (stringMatches(category, collection)) {
@@ -988,6 +995,7 @@ export function getCollectionItems(collection: string, allItems = false): number
 			_items = Array.from(new Set(Object.values(Monsters.get(_monster!.id)!.allItems!).flat(100))) as number[];
 		}
 	}
+	if (removeCoins && _items.includes(995)) _items.splice(_items.indexOf(995), 1);
 	return _items;
 }
 
@@ -1011,7 +1019,7 @@ export async function getCollection(options: {
 	if (logType === undefined) logType = 'collection';
 
 	const userCheckBank = getBank(user, logType);
-	let clItems = getCollectionItems(search, allItems);
+	let clItems = getCollectionItems(search, allItems, logType === 'sacrifice');
 
 	if (Boolean(flags.missing)) {
 		clItems = clItems.filter(i => !userCheckBank.has(i));
@@ -1027,7 +1035,7 @@ export async function getCollection(options: {
 				collection: clItems,
 				collectionObtained: userAmount,
 				collectionTotal: totalCl,
-				leftList: getLeftList(userCheckBank, category, allItems),
+				leftList: getLeftList(userCheckBank, category, allItems, logType === 'sacrifice'),
 				userItems: userCheckBank
 			};
 		}
@@ -1073,7 +1081,12 @@ export async function getCollection(options: {
 					isActivity: attributes.isActivity,
 					collectionObtained: userAmount,
 					collectionTotal: totalCl,
-					leftList: getLeftList(userCheckBank, category, allItems && attributes.allItems !== undefined),
+					leftList: getLeftList(
+						userCheckBank,
+						category,
+						allItems && attributes.allItems !== undefined,
+						logType === 'sacrifice'
+					),
 					userItems: userCheckBank
 				};
 			}
