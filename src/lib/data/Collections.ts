@@ -5,6 +5,7 @@ import { Bank, Clues, Monsters } from 'oldschooljs';
 import ChambersOfXeric from 'oldschooljs/dist/simulation/minigames/ChambersOfXeric';
 import { table } from 'table';
 
+import { COINS_ID } from '../constants';
 import killableMonsters, { effectiveMonsters, NightmareMonster } from '../minions/data/killableMonsters';
 import { sepulchreFloors } from '../minions/data/sepulchre';
 import {
@@ -32,7 +33,7 @@ import {
 	capesCL,
 	castleWarsCL,
 	cerberusCL,
-	chambersOfXericCl,
+	chambersOfXericCL,
 	championsChallengeCL,
 	chaosDruisCL,
 	chaosElementalCL,
@@ -330,6 +331,7 @@ export const allCollectionLogs: ICollection = {
 				roleCategory: ['bosses']
 			},
 			Tempoross: {
+				alias: ['temp', 'ross', 'tempo', 'watertodt'],
 				items: temporossCL,
 				allItems: resolveItems([...spiritAnglerOutfit, 'Spirit flakes']),
 				roleCategory: ['bosses']
@@ -380,7 +382,7 @@ export const allCollectionLogs: ICollection = {
 					Default: user => user.getMinigameScore('Raids'),
 					Challenge: user => user.getMinigameScore('RaidsChallengeMode')
 				},
-				items: chambersOfXericCl,
+				items: chambersOfXericCL,
 				roleCategory: ['raids'],
 				isActivity: true
 			},
@@ -975,21 +977,32 @@ export function getPossibleOptions() {
 	return new MessageAttachment(Buffer.from(normalTable), 'possible_logs.txt');
 }
 
-export function getCollectionItems(collection: string, allItems = false, removeCoins = false): number[] {
-	let _items: number[] = [];
+function removeCategoryDuplicates(categoryItems: number[][]): number[][] {
+	const items: number[] = [];
+	for (let i = 0; i < categoryItems.length; i++) {
+		const newCategory: number[] = [];
+		for (let item of categoryItems[i]) {
+			if (items.includes(item)) continue;
+			newCategory.push(item);
+			items.push(item);
+		}
+		categoryItems[i] = newCategory;
+	}
+	return categoryItems;
+}
+
+export function getCollectionItems(collection: string, allItems = false, removeCoins = false): number[][] {
+	let _items: number[][] = [];
 	loop: for (const [category, entries] of Object.entries(allCollectionLogs)) {
 		if (
 			stringMatches(category, collection) ||
 			(entries.alias && entries.alias.some(a => stringMatches(a, collection)))
 		) {
-			_items = [
-				...new Set(
-					Object.entries(entries.activities)
-						.filter(e => e[1].enabled === undefined && e[1].hidden === undefined)
-						.map(e => [...new Set([...e[1].items, ...(allItems && e[1].allItems ? e[1].allItems : [])])])
-						.flat(2)
-				)
-			];
+			_items = removeCategoryDuplicates(
+				Object.entries(entries.activities)
+					.filter(e => e[1].enabled === undefined && e[1].hidden === undefined)
+					.map(e => [...new Set([...e[1].items, ...(allItems && e[1].allItems ? e[1].allItems : [])])])
+			);
 			break;
 		}
 		for (const [activityName, attributes] of Object.entries(entries.activities)) {
@@ -999,24 +1012,29 @@ export function getCollectionItems(collection: string, allItems = false, removeC
 					(attributes.alias && attributes.alias.find(a => stringMatches(a, collection))))
 			) {
 				_items = [
-					...new Set([...attributes.items, ...(allItems && attributes.allItems ? attributes.allItems : [])])
+					[...new Set([...attributes.items, ...(allItems && attributes.allItems ? attributes.allItems : [])])]
 				];
 				break loop;
 			}
 		}
 	}
 	if (_items.length === 0) {
-		_items = collectionLogRoleCategories[collection.toLowerCase().replace('role', '')] ?? [];
+		_items = [collectionLogRoleCategories[collection.toLowerCase().replace('role', '')] ?? []];
 	}
 	if (_items.length === 0) {
 		const _monster = killableMonsters.find(
 			m => stringMatches(m.name, collection) || m.aliases.some(name => stringMatches(name, collection))
 		);
 		if (_monster) {
-			_items = Array.from(new Set(Object.values(Monsters.get(_monster!.id)!.allItems!).flat(100))) as number[];
+			_items = [Array.from(new Set(Object.values(Monsters.get(_monster!.id)!.allItems!).flat(100))) as number[]];
 		}
 	}
-	if (removeCoins && _items.includes(995)) _items.splice(_items.indexOf(995), 1);
+
+	// Remove coins
+	if (removeCoins)
+		for (const base of _items)
+			for (const item of base) if (item === COINS_ID) base.splice(base.indexOf(COINS_ID), 1);
+
 	return _items;
 }
 
@@ -1046,7 +1064,7 @@ export async function getCollection(options: {
 		clItems = clItems.filter(i => !userCheckBank.has(i));
 	}
 
-	const [totalCl, userAmount] = getUserClData(userCheckBank.bank, clItems);
+	const [totalCl, userAmount] = getUserClData(userCheckBank.bank, clItems.flat(2));
 
 	for (const [category, entries] of Object.entries(allCollectionLogs)) {
 		if (stringMatches(category, search) || (entries.alias && entries.alias.some(a => stringMatches(a, search)))) {
@@ -1117,7 +1135,7 @@ export async function getCollection(options: {
 		return {
 			category: 'Custom',
 			name: search,
-			collection: roleCategory,
+			collection: [roleCategory],
 			collectionObtained: userAmount,
 			collectionTotal: totalCl,
 			userItems: userCheckBank

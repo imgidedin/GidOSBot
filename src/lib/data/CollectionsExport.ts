@@ -6,7 +6,7 @@ import resolveItems from '../util/resolveItems';
 export interface IToReturnCollection {
 	category: string;
 	name: string;
-	collection: number[];
+	collection: number[][];
 	completions?: Record<string, number>;
 	isActivity?: boolean;
 	collectionObtained: number;
@@ -307,7 +307,7 @@ export const chambersOfXericMetamorphPets = resolveItems([
 	'Vasa minirio',
 	'Vespina'
 ]);
-export const chambersOfXericCl = resolveItems([
+export const chambersOfXericCL = resolveItems([
 	'Olmlet',
 	'Metamorphic dust',
 	'Twisted bow',

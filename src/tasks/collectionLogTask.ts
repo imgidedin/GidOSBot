@@ -5,7 +5,13 @@ import fs from 'fs';
 import { KlasaUser, Task } from 'klasa';
 
 import { Events } from '../lib/constants';
-import { allCollectionLogs, getCollection, getPossibleOptions, getTotalCl } from '../lib/data/Collections';
+import {
+	allCollectionLogs,
+	converCLtoBank,
+	getCollection,
+	getPossibleOptions,
+	getTotalCl
+} from '../lib/data/Collections';
 import { IToReturnCollection } from '../lib/data/CollectionsExport';
 import bankBackgrounds from '../lib/minions/data/bankBackgrounds';
 import { UserSettings } from '../lib/settings/types/UserSettings';
@@ -274,7 +280,12 @@ export default class CollectionLogTask extends Task {
 			317,
 			Math.max(
 				flags.tall ? (leftListCanvas ? 75 + leftListCanvas.height : 0) : 0,
-				121 + (itemSize + itemSpacer) * Math.ceil(collectionLog.collectionTotal / maxPerLine)
+				121 +
+					(itemSize + itemSpacer) *
+						Math.ceil(
+							(collectionLog.collectionTotal + (flags.space ? collectionLog.collection.length - 2 : 0)) /
+								maxPerLine
+						)
 			)
 		);
 
@@ -349,59 +360,67 @@ export default class CollectionLogTask extends Task {
 		}
 		let i = 0;
 		let y = 0;
-		for (const item of collectionLog.collection) {
-			if (i > 0 && i % maxPerLine === 0) {
-				i = 0;
-				y += 1;
+		for (const base of collectionLog.collection) {
+			let qtyColor = '#FFFF00';
+			// Color the items of this collection green if the collection is completed
+			if (userCollectionBank.has(converCLtoBank(base).bank)) {
+				qtyColor = '#00FF80';
 			}
-			const itemImage = await (this.client.tasks.get('bankImage') as BankImageTask)
-				.getItemImage(item, 1)
-				.catch(() => {
-					console.error(`Failed to load item image for item with id: ${item}`);
-				});
-			if (!itemImage) {
-				this.client.emit(Events.Warn, `Item with ID[${item}] has no item image.`);
-				continue;
-			}
+			for (const item of base) {
+				if (i > 0 && (i % maxPerLine === 0 || i > maxPerLine)) {
+					i = 0;
+					y += 1;
+				}
+				const itemImage = await (this.client.tasks.get('bankImage') as BankImageTask)
+					.getItemImage(item, 1)
+					.catch(() => {
+						console.error(`Failed to load item image for item with id: ${item}`);
+					});
+				if (!itemImage) {
+					this.client.emit(Events.Warn, `Item with ID[${item}] has no item image.`);
+					continue;
+				}
 
-			let qtyText = 0;
-			if (!userCollectionBank.has(item)) {
-				ctx.globalAlpha = 0.3;
-			} else {
-				qtyText = userCollectionBank.amount(item);
-			}
+				let qtyText = 0;
+				if (!userCollectionBank.has(item)) {
+					ctx.globalAlpha = 0.3;
+				} else {
+					qtyText = userCollectionBank.amount(item);
+				}
 
-			totalPrice += getOSItem(item).price * qtyText;
+				totalPrice += getOSItem(item).price * qtyText;
 
-			if (flags.debug) {
-				ctx.fillStyle = '#FF0000';
-				ctx.fillRect(
-					Math.floor(i * (itemSize + itemSpacer) + (itemSize - itemImage.width) / 2) + 2,
+				if (flags.debug) {
+					ctx.fillStyle = '#FF0000';
+					ctx.fillRect(
+						Math.floor(i * (itemSize + itemSpacer) + (itemSize - itemImage.width) / 2) + 2,
+						Math.floor(y * (itemSize + itemSpacer) + (itemSize - itemImage.height) / 2),
+						itemImage.width,
+						itemImage.height
+					);
+				}
+				ctx.drawImage(
+					itemImage,
+					Math.floor(i * (itemSize + itemSpacer) + (itemSize - itemImage.width) / 2) + 4,
 					Math.floor(y * (itemSize + itemSpacer) + (itemSize - itemImage.height) / 2),
 					itemImage.width,
 					itemImage.height
 				);
-			}
-			ctx.drawImage(
-				itemImage,
-				Math.floor(i * (itemSize + itemSpacer) + (itemSize - itemImage.width) / 2) + 4,
-				Math.floor(y * (itemSize + itemSpacer) + (itemSize - itemImage.height) / 2),
-				itemImage.width,
-				itemImage.height
-			);
 
-			if (qtyText > 0) {
-				ctx.fillStyle = generateHexColorForCashStack(qtyText);
-				this.drawText(
-					ctx,
-					formatItemStackQuantity(qtyText),
-					Math.floor(i * (itemSize + itemSpacer) + (itemSize - itemImage.width) / 2) + 1,
-					Math.floor(y * (itemSize + itemSpacer) + (itemSize - itemImage.height) / 2) + 9
-				);
-			}
+				if (qtyText > 0) {
+					ctx.fillStyle = qtyColor;
+					this.drawText(
+						ctx,
+						formatItemStackQuantity(qtyText),
+						Math.floor(i * (itemSize + itemSpacer) + (itemSize - itemImage.width) / 2) + 1,
+						Math.floor(y * (itemSize + itemSpacer) + (itemSize - itemImage.height) / 2) + 9
+					);
+				}
 
-			ctx.globalAlpha = 1;
-			i++;
+				ctx.globalAlpha = 1;
+				i++;
+			}
+			if (flags.space) i++;
 		}
 		ctx.restore();
 		// Draw collection name
