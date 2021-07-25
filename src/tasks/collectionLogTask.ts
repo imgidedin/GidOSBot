@@ -361,9 +361,9 @@ export default class CollectionLogTask extends Task {
 		let i = 0;
 		let y = 0;
 		for (const base of collectionLog.collection) {
-			let qtyColor = '#FFFF00';
+			let qtyColor: false | string = false;
 			// Color the items of this collection green if the collection is completed
-			if (userCollectionBank.has(converCLtoBank(base).bank)) {
+			if (collectionLog.collection.length > 1 && userCollectionBank.has(converCLtoBank(base).bank)) {
 				qtyColor = '#00FF80';
 			}
 			for (const item of base) {
@@ -408,7 +408,7 @@ export default class CollectionLogTask extends Task {
 				);
 
 				if (qtyText > 0) {
-					ctx.fillStyle = qtyColor;
+					ctx.fillStyle = !qtyColor ? generateHexColorForCashStack(qtyText) : qtyColor;
 					this.drawText(
 						ctx,
 						formatItemStackQuantity(qtyText),
