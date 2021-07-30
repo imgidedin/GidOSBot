@@ -72,9 +72,11 @@ import {
 	dailyCL,
 	demonicGorillaCL,
 	discontinuedCustomPetsCL,
+	dwarvenItems,
 	fightCavesCL,
 	fishingTrawlerCL,
 	fossilIslandNotesCL,
+	gamblingBags,
 	generalGraardorCL,
 	giantMoleCL,
 	gnomeRestaurantCL,
@@ -97,6 +99,7 @@ import {
 	magicTrainingArenaCL,
 	mahoganyHomesCL,
 	miscellaneousCL,
+	misteryBoxes,
 	monkeyBackpacksCL,
 	motherlodeMineCL,
 	nexCL,
@@ -978,6 +981,29 @@ export const allCollectionLogs: ICollection = {
 			Farming: {
 				counts: false,
 				items: allFarmingItems
+			},
+			'Gambling bags': {
+				counts: false,
+				alias: ['gambling', 'dice', 'dice bags'],
+				items: gamblingBags
+			},
+			'Dwarven equipment': {
+				counts: false,
+				alias: [
+					'dwarven equips',
+					'dwe',
+					'dwi',
+					'dwarf equips',
+					'dwarf equipment',
+					'dwarven items',
+					'dwarf items'
+				],
+				items: dwarvenItems
+			},
+			'Mystery boxes': {
+				counts: false,
+				alias: ['mbs', 'boxes'],
+				items: misteryBoxes
 			}
 		}
 	}

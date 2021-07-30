@@ -883,12 +883,14 @@ export const cluesGrandmasterCL = resolveItems([
 	'First age cape',
 	'First age bracelet',
 	'First age ring',
+	'Deathtouched dart',
 	'Shadow dye',
 	'Blood dye',
 	'Third age dye',
 	'Ice dye',
+	'Ring of luck',
 	'Dwarven blessing',
-	'Ring of luck'
+	'Monkey nuts'
 ]);
 
 export const cluesHardRareCL = resolveItems([
@@ -1545,8 +1547,8 @@ export const shayzienArmourCL = resolveItems([
 	'Shayzien gloves (5)',
 	'Shayzien boots (5)',
 	'Shayzien helm (5)',
-	'Shayzien greaves (5)',
-	'Shayzien platebody (5)'
+	'Shayzien greaves (5)'
+	// 'Shayzien body (5)'
 ]);
 export const skillingPetsCL = resolveItems([
 	'Heron',
@@ -1907,7 +1909,11 @@ export const capesCL = resolveItems([
 	'Hitpoints master cape',
 	'Ranged master cape',
 	'Slayer master cape',
-	'Dungeoneering master cape'
+	'Dungeoneering master cape',
+	"Combatant's cape",
+	'Support cape',
+	"Artisan's cape",
+	"Gatherer's cape"
 ]);
 export const questCL = resolveItems([
 	'Quest point hood',
@@ -2036,12 +2042,7 @@ export const treeBeardCL = resolveItems([
 	'Ent hide'
 ]);
 
-export const seaKrakenCL = resolveItems([
-	// Tangleroot pets
-	'Fish sack',
-	'Pufferfish',
-	'Fishing trophy'
-]);
+export const seaKrakenCL = resolveItems(['Fish sack', 'Pufferfish', 'Fishing trophy']);
 
 export const customBossesDropsThatCantBeDroppedInMBs = [
 	...kingGoldemarCL,
@@ -2052,3 +2053,40 @@ export const customBossesDropsThatCantBeDroppedInMBs = [
 	...ignecarusCL,
 	...treeBeardCL
 ];
+
+export const gamblingBags = resolveItems([
+	'Gamblers bag',
+	'4 sided die',
+	'6 sided die',
+	'8 sided die',
+	'10 sided die',
+	'12 sided die',
+	'20 sided die',
+	'100 sided die'
+]);
+
+export const dwarvenItems = resolveItems([
+	'Dwarven full helm',
+	'Dwarven platebody',
+	'Dwarven platelegs',
+	'Dwarven gloves',
+	'Dwarven boots',
+	'Dwarven gauntlets',
+	'Broken dwarven warhammer',
+	'Dwarven warhammer',
+	'Dwarven greataxe',
+	'Dwarven knife',
+	'Dwarven greathammer',
+	'Dwarven pickaxe',
+	'Dwarven bar',
+	'Dwarven ore',
+	'Dwarven crate'
+]);
+
+export const misteryBoxes = resolveItems([
+	'Tradeable mystery box',
+	'Untradeable mystery box',
+	'Pet mystery box',
+	'Holiday mystery box',
+	'Equippable mystery box'
+]);
