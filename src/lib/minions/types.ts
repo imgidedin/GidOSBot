@@ -1,6 +1,6 @@
 import { Image } from 'canvas';
 import { KlasaMessage } from 'klasa';
-import { Bank, MonsterKillOptions } from 'oldschooljs';
+import { Bank, LootTable, MonsterKillOptions } from 'oldschooljs';
 import { BeginnerCasket } from 'oldschooljs/dist/simulation/clues/Beginner';
 import { EasyCasket } from 'oldschooljs/dist/simulation/clues/Easy';
 import { EliteCasket } from 'oldschooljs/dist/simulation/clues/Elite';
@@ -57,6 +57,7 @@ export interface KillableMonster {
 	aliases: string[];
 	timeToFinish: number;
 	table: {
+		table?: LootTable;
 		kill(quantity: number, options: MonsterKillOptions): Bank;
 	};
 	emoji?: string;
