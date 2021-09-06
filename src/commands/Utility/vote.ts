@@ -2,11 +2,10 @@ import { ButtonInteraction, Message, MessageActionRow, MessageButton } from 'dis
 import { objectEntries } from 'e';
 import { CommandStore, KlasaClient, KlasaMessage } from 'klasa';
 
-import { EInteractionTypes } from '../../events/interactions';
 import { BitField, Emoji } from '../../lib/constants';
 import { UserSettings } from '../../lib/settings/types/UserSettings';
 import { BotCommand } from '../../lib/structures/BotCommand';
-import { Interactions } from '../../lib/typeorm/Interactions.entity';
+import { EInteractionTypes, Interactions } from '../../lib/typeorm/Interactions.entity';
 import { Voting } from '../../lib/typeorm/Voting.entity';
 
 export async function proccessVoting(client: KlasaClient, interaction: ButtonInteraction) {

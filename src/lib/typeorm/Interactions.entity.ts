@@ -1,6 +1,8 @@
 import { BaseEntity, Column, Entity, PrimaryColumn } from 'typeorm';
 
-import { EInteractionTypes } from '../../events/interactions';
+export const enum EInteractionTypes {
+	Voting = 'voting'
+}
 
 @Entity({ name: 'interactions' })
 export class Interactions extends BaseEntity {

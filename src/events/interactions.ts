@@ -2,11 +2,7 @@ import { ButtonInteraction, Message, MessageComponentInteraction } from 'discord
 import { Event, EventStore } from 'klasa';
 
 import { proccessVoting } from '../commands/Utility/vote';
-import { Interactions } from '../lib/typeorm/Interactions.entity';
-
-export const enum EInteractionTypes {
-	Voting = 'voting'
-}
+import { EInteractionTypes, Interactions } from '../lib/typeorm/Interactions.entity';
 
 export default class extends Event {
 	public constructor(store: EventStore, file: string[], directory: string) {
