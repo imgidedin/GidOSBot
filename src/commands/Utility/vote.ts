@@ -10,7 +10,6 @@ import { Interactions } from '../../lib/typeorm/Interactions.entity';
 import { Voting } from '../../lib/typeorm/Voting.entity';
 
 export async function proccessVoting(client: KlasaClient, interaction: ButtonInteraction) {
-	console.log(interaction.id);
 	await interaction.deferUpdate();
 	// Check if it is a valid voting
 	const vote = await Voting.findOne({
