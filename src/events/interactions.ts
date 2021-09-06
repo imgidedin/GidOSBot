@@ -24,7 +24,7 @@ export default class extends Event {
 		});
 		if (!interactionFound) {
 			await interaction.reply({
-				content: 'This is not a valid interaction to reply to.',
+				content: 'This is not a valid message you can interact with.',
 				ephemeral: true
 			});
 			return (interaction.message as Message).edit({ components: [] });
