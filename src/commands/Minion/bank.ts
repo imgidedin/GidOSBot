@@ -32,7 +32,7 @@ export default class extends Command {
 		});
 	}
 
-	// Test
+	// Test 2
 	generateImage(amount: number) {
 		const BG = new Image();
 		BG.src = bg;
