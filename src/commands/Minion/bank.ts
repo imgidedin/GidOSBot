@@ -1,10 +1,10 @@
-import { Command, KlasaMessage, CommandStore, util } from 'klasa';
+import { Command, CommandStore, KlasaMessage, util } from 'klasa';
 import { MessageAttachment, MessageEmbed } from 'discord.js';
 import { createCanvas, Image, registerFont } from 'canvas';
 import * as fs from 'fs';
 import { Items } from 'oldschooljs';
 
-import { generateHexColorForCashStack, formatItemStackQuantity, chunkObject } from '../../lib/util';
+import { chunkObject, formatItemStackQuantity, generateHexColorForCashStack } from '../../lib/util';
 import { Bank } from '../../lib/types';
 import { Emoji } from '../../lib/constants';
 import { UserSettings } from '../../lib/settings/types/UserSettings';
@@ -32,6 +32,7 @@ export default class extends Command {
 		});
 	}
 
+	// Test
 	generateImage(amount: number) {
 		const BG = new Image();
 		BG.src = bg;
