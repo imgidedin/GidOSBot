@@ -1,10 +1,11 @@
 import { MessageAttachment } from 'discord.js';
-import { objectEntries } from 'e';
+import { objectEntries, objectKeys } from 'e';
 import { KlasaUser } from 'klasa';
 import { Bank, Clues, Monsters } from 'oldschooljs';
 import ChambersOfXeric from 'oldschooljs/dist/simulation/minigames/ChambersOfXeric';
 import { table } from 'table';
 
+import { SORT_ASC, SORT_DESC } from '../constants';
 import killableMonsters, { effectiveMonsters, NightmareMonster } from '../minions/data/killableMonsters';
 import { sepulchreFloors } from '../minions/data/sepulchre';
 import {
@@ -14,7 +15,14 @@ import {
 	rewardTokens
 } from '../minions/data/templeTrekking';
 import { UserSettings } from '../settings/types/UserSettings';
-import { allFarmingItems } from '../skilling/skills/farming';
+import Farming, { allFarmingItems } from '../skilling/skills/farming';
+import Fishing from '../skilling/skills/fishing';
+import Herblore from '../skilling/skills/herblore/herblore';
+import Mining from '../skilling/skills/mining';
+import Runecraft from '../skilling/skills/runecraft';
+import Thieving from '../skilling/skills/thieving';
+import { Pickpocketables } from '../skilling/skills/thieving/stealables';
+import Woodcutting from '../skilling/skills/woodcutting';
 import { ItemBank } from '../types';
 import { addArrayOfNumbers, stringMatches } from '../util';
 import resolveItems from '../util/resolveItems';
@@ -273,7 +281,7 @@ export const allCollectionLogs: ICollection = {
 			'The Gauntlet': {
 				alias: ['gauntlet', 'crystalline hunllef', 'hunllef'],
 				kcActivity: {
-					Default: user => user.getMinigameScore('Gauntlet'),
+					Normal: user => user.getMinigameScore('Gauntlet'),
 					Corrupted: user => user.getMinigameScore('CorruptedGauntlet')
 				},
 				items: theGauntletCL,
@@ -415,7 +423,7 @@ export const allCollectionLogs: ICollection = {
 			"Chamber's of Xeric": {
 				alias: ChambersOfXeric.aliases,
 				kcActivity: {
-					Default: user => user.getMinigameScore('Raids'),
+					Normal: user => user.getMinigameScore('Raids'),
 					Challenge: user => user.getMinigameScore('RaidsChallengeMode')
 				},
 				items: chambersOfXericCl,
@@ -564,7 +572,7 @@ export const allCollectionLogs: ICollection = {
 				alias: ['ba', 'barb assault', 'barbarian assault'],
 				items: barbarianAssaultCL,
 				kcActivity: {
-					Default: async user => user.getMinigameScore('BarbarianAssault'),
+					Games: async user => user.getMinigameScore('BarbarianAssault'),
 					'High Gambles': async user => user.settings.get(UserSettings.HighGambles)
 				},
 				roleCategory: ['minigames'],
@@ -904,13 +912,88 @@ export const allCollectionLogs: ICollection = {
 				counts: false,
 				items: questCL
 			},
-			Farming: {
-				counts: false,
-				items: allFarmingItems
-			},
 			Implings: {
 				counts: false,
 				items: implingsCL
+			},
+			'Skill Farming': {
+				counts: false,
+				alias: [Farming.name, ...Farming.aliases],
+				items: allFarmingItems,
+				kcActivity: {
+					XP: async user => user.rawSkills.farming!
+				}
+			},
+			'Skill Runecraft': {
+				alias: [Runecraft.name, ...Runecraft.aliases],
+				items: [
+					...Runecraft.Runes.map(r => r.id),
+					...Runecraft.pouches.map(p => p.id),
+					...resolveItems(['Rift guardian'])
+				],
+				kcActivity: {
+					XP: async user => user.rawSkills.runecraft!
+				},
+				counts: false
+			},
+			'Skill Woodcutting': {
+				alias: [Woodcutting.name, ...Woodcutting.aliases],
+				items: [
+					...Woodcutting.Logs.map(r => r.id),
+					...objectKeys(Woodcutting.lumberjackItems).map(l => Number(l)),
+					...resolveItems(['Beaver'])
+				],
+				kcActivity: {
+					XP: async user => user.rawSkills.woodcutting!
+				},
+				counts: false
+			},
+			'Skill Mining': {
+				alias: [Mining.name, ...Mining.aliases],
+				items: [
+					...Mining.Ores.map(r => r.id).sort(SORT_ASC),
+					...Mining.GemRockTable.allItems.sort(SORT_DESC),
+					...objectKeys(Mining.prospectorItems).map(p => Number(p)),
+					...resolveItems(['Rock golem'])
+				],
+				kcActivity: {
+					XP: async user => user.rawSkills.mining!
+				},
+				counts: false
+			},
+			'Skill Fishing': {
+				alias: [Fishing.name, ...Fishing.aliases],
+				items: [
+					...Fishing.Fishes.map(r => r.id),
+					...objectKeys(Fishing.anglerItems).map(p => Number(p)),
+					...resolveItems(['Heron'])
+				],
+				kcActivity: {
+					XP: async user => user.rawSkills.fishing!
+				},
+				counts: false
+			},
+			'Skill Herblore': {
+				alias: [Herblore.name, ...Herblore.aliases],
+				items: [...Herblore.Mixables.map(r => r.id)],
+				kcActivity: {
+					XP: async user => user.rawSkills.herblore!
+				},
+				counts: false
+			},
+			'Skill Thieving': {
+				alias: [Thieving.name, ...Thieving.aliases],
+				items: [
+					...Pickpocketables.map(r => {
+						return r.table.allItems;
+					})
+				]
+					.flat(2)
+					.sort(SORT_ASC),
+				kcActivity: {
+					XP: async user => user.rawSkills.thieving!
+				},
+				counts: false
 			}
 		}
 	}
@@ -1157,6 +1240,7 @@ export async function getCollection(options: {
 					if (typeof attributes.kcActivity === 'string') {
 						userKC.Default += (await user.getKCByName(attributes.kcActivity))[1];
 					} else {
+						if (!attributes.kcActivity['Default']) userKC = {};
 						for (const [type, value] of objectEntries(attributes.kcActivity)) {
 							if (!userKC[type]) userKC[type] = 0;
 							if (Array.isArray(value)) {

@@ -468,18 +468,19 @@ export default class CollectionLogTask extends Task {
 			// Times done/killed
 			ctx.font = '16px OSRSFontCompact';
 			ctx.textAlign = 'left';
-			ctx.fillStyle = '#FF981F';
-			this.drawText(ctx, (drawnSoFar = collectionLog.isActivity ? 'Completions: ' : 'Kills: '), 0, 25);
+			let num = 0;
 			for (let [type, value] of objectEntries(collectionLog.completions)) {
-				if (type !== 'Default') {
-					if (value === 0) continue;
-					ctx.fillStyle = '#FF981F';
-					this.drawText(ctx, ` / ${type}: `, ctx.measureText(drawnSoFar).width, 25);
-					drawnSoFar += ` / ${type}: `;
-				}
+				ctx.fillStyle = '#FF981F';
+				if (type === 'Default') type = collectionLog.isActivity ? 'Completions: ' : 'Kills: ';
+				else type = `${type}: `;
+				let text = `${num > 0 ? ' / ' : ''}${type}`;
+				this.drawText(ctx, text, ctx.measureText(drawnSoFar).width, 25);
+				drawnSoFar += text;
 				ctx.fillStyle = '#FFFFFF';
-				this.drawText(ctx, value.toLocaleString(), ctx.measureText(drawnSoFar).width, 25);
-				drawnSoFar += value.toLocaleString();
+				text = value.toLocaleString();
+				this.drawText(ctx, text, ctx.measureText(drawnSoFar).width, 25);
+				drawnSoFar += text;
+				num++;
 			}
 		}
 		ctx.restore();

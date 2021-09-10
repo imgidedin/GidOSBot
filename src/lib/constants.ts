@@ -491,3 +491,6 @@ export const lastTripCache = new Map<
 	string,
 	{ continue: (message: KlasaMessage) => Promise<KlasaMessage | KlasaMessage[] | null>; data: ActivityTaskOptions }
 >();
+
+export const SORT_ASC = (a: number, b: number) => a - b;
+export const SORT_DESC = (a: number, b: number) => b - a;
